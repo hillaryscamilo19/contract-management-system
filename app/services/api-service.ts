@@ -140,7 +140,9 @@ export const deleteContract = async (id) => {
   return { success: true }
 }
 
-export const downloadContract = async (id: string) => {
+export c
+
+onst downloadContract = async (id: string) => {
   try {
     const response = await fetch(`http://localhost:5210/api/Archivos/ver/${id}`, {
       method: "GET",
