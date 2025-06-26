@@ -1,25 +1,30 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
-import ClientList from "./components/client-list"
-import ContractList from "./components/contract-list"
-import Dashboard from "./components/dashboard"
-import ClientForm from "./components/client-form"
-import ContractForm from "./components/contract-form"
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import ClientList from "./components/client-list";
+import ContractList from "./components/contract-list";
+import Dashboard from "./components/dashboard";
+import ClientForm from "./components/client-form";
+import ContractForm from "./components/contract-form";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("dashboard")
-  const [selectedClient, setSelectedClient] = useState(null)
-  const [showClientForm, setShowClientForm] = useState(false)
-  const [showContractForm, setShowContractForm] = useState(false)
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [showClientForm, setShowClientForm] = useState(false);
+  const [showContractForm, setShowContractForm] = useState(false);
 
   return (
     <main className="flex min-h-screen flex-col p-4 md:p-8">
       <h1 className="text-3xl font-bold mb-6">Registro de Documentos</h1>
 
-      <Tabs defaultValue="dashboard" value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs
+        defaultValue="dashboard"
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full"
+      >
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="dashboard">Home</TabsTrigger>
           <TabsTrigger value="clients">Clientes</TabsTrigger>
@@ -31,26 +36,29 @@ export default function Home() {
             <TabsContent value="dashboard">
               <Dashboard
                 onCreateClient={() => {
-                  setShowClientForm(true)
-                  setActiveTab("clients")
+                  setShowClientForm(true);
+                  setActiveTab("clients");
                 }}
                 onCreateContract={() => {
-                  setShowContractForm(true)
-                  setActiveTab("contracts")
+                  setShowContractForm(true);
+                  setActiveTab("contracts");
                 }}
               />
             </TabsContent>
 
             <TabsContent value="clients">
               {showClientForm ? (
-                <ClientForm onCancel={() => setShowClientForm(false)} onSuccess={() => setShowClientForm(false)} />
+                <ClientForm
+                  onCancel={() => setShowClientForm(false)}
+                  onSuccess={() => setShowClientForm(false)}
+                />
               ) : (
                 <ClientList
                   onAddNew={() => setShowClientForm(true)}
                   onSelectClient={(client) => {
-                    setSelectedClient(client)
-                    setShowContractForm(true)
-                    setActiveTab("contracts")
+                    setSelectedClient(client);
+                    setShowContractForm(true);
+                    setActiveTab("contracts");
                   }}
                 />
               )}
@@ -61,22 +69,19 @@ export default function Home() {
                 <ContractForm
                   client={selectedClient}
                   onCancel={() => {
-                    setShowContractForm(false)
-                    setSelectedClient(null)
+                    setShowContractForm(false);
+                    setSelectedClient(null);
                   }}
                   onSuccess={() => {
-                    setShowContractForm(false)
-                    setSelectedClient(null)
+                    setShowContractForm(false);
+                    setSelectedClient(null);
                   }}
                 />
               ) : (
                 <ContractList
                   onAddNew={() => {
-                    if (!selectedClient) {
-                      setActiveTab("clients")
-                    } else {
-                      setShowContractForm(true)
-                    }
+                    console.log("Abrir formulario desde ContractList"); // <-- ponlo aquí también
+                    setShowContractForm(true); // <-- esta línea debe ejecutarse
                   }}
                   selectedClient={selectedClient}
                   onSelectClient={(client) => setSelectedClient(client)}
@@ -87,6 +92,5 @@ export default function Home() {
         </Card>
       </Tabs>
     </main>
-  )
+  );
 }
-

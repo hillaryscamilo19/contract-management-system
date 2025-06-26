@@ -1,260 +1,424 @@
-"use client"
+import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
+import {
+  createContract,
+  fetchClients,
+  fetchEmpresas,
+  fetchServicios,
+  fetchTiposContrato,
+  updateContract,
+} from "../services/api-service";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { CalendarIcon, Upload } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { createContract, updateContract, fetchClients } from "../services/api-service"
-import { useToast } from "@/hooks/use-toast"
-
-interface ContractFormProps {
-  contract?: any
-  client?: any
-  onCancel: () => void
-  onSuccess: () => void
+interface ConntractFormProps {
+  contract?: any;
+  client?: any;
+  onCancel: () => void;
+  onSuccess: () => void;
 }
-
-export default function ContractForm({ contract, client, onCancel, onSuccess }: ContractFormProps) {
-  const isEditing = !!contract
-  const { toast } = useToast()
-  const [clients, setClients] = useState([])
+export default function ContractFormPreview({
+  contract,
+  client,
+  onCancel,
+  onSuccess,
+}: ConntractFormProps) {
+  const isEditing = !!contract;
+  const { toast } = useToast();
+  const [clients, setClients] = useState([]);
+  const [Estado, setEstado] = useState([]);
+  const [services, setServices] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [contractTypes, setContractTypes] = useState([]);
 
   const [formData, setFormData] = useState({
-    title: contract?.title || "",
-    clientId: contract?.clientId || client?.id || "",
-    startDate: contract?.startDate ? new Date(contract.startDate) : new Date(),
-    expirationDate: contract?.expirationDate
-      ? new Date(contract.expirationDate)
-      : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-    description: contract?.description || "",
-    notes: contract?.notes || "",
-    file: null,
-  })
+    descripcion: contract?.descripcion || "",
+    estado: contract?.estado || "Activo",
+    clienteId: contract?.clienteId || client?.id || "",
+    serviciosId: contract?.serviciosId || "",
+    empresa: contract?.empresa || "",
+    tipoContrato: contract?.tipoContrato || "",
+    empresaPropietario: contract?.empresaPropietario || "",
+    creado: contract?.creado ? contract.creado.substring(0, 10) : "", // YYYY-MM-DD
+    vencimiento: contract?.vencimiento
+      ? contract.vencimiento.substring(0, 10)
+      : "",
+    archivos: null,
+  });
 
-  const [loading, setLoading] = useState(false)
-  const [fileSelected, setFileSelected] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const [fileSelected, setFileSelected] = useState(false);
 
   useEffect(() => {
     const loadClients = async () => {
       try {
-        const data = await fetchClients()
-        setClients(data)
+        const data = await fetchClients();
+        setClients(data);
       } catch (error) {
-        console.error("Error loading clients:", error)
+        console.error("Error loading clients:", error);
       }
-    }
+    };
 
-    loadClients()
-  }, [])
+    loadClients();
+  }, []);
+
+  useEffect(() => {
+    const loadClients = async () => {
+      try {
+        const data = await fetchClients();
+        setServices(data);
+      } catch (error) {
+        console.error("Error loading clients:", error);
+      }
+    };
+
+    loadClients();
+  }, []);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const clientsData = await fetchClients();
+        const servicesData = await fetchServicios();
+        const companiesData = await fetchEmpresas();
+        const typesData = await fetchTiposContrato();
+
+        setClients(clientsData);
+        setServices(servicesData);
+        setCompanies(companiesData);
+        setContractTypes(typesData);
+      } catch (error) {
+        console.error("Error cargando datos:", error);
+      }
+    };
+
+    loadData();
+  }, []);
 
   useEffect(() => {
     if (client) {
-      setFormData((prev) => ({ ...prev, clientId: client.id }))
+      setFormData((prev) => ({ ...prev, clientId: client.id }));
     }
-  }, [client])
+  }, [client]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleChange = (e: { target: { name: any; value: any } }) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    setFormData((prev) => ({ ...prev, archivos: file }));
+    setFileSelected(true);
   }
+};
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      setFormData((prev) => ({ ...prev, file }))
-      setFileSelected(true)
-    }
-  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
+    console.log("Archivo seleccionado:", formData.archivos);
+    console.log("Se hizo submit");
+    e.preventDefault();
 
-    if (!formData.title || !formData.clientId) {
-      toast({
-        title: "Error",
-        description: "Título y cliente son campos obligatorios",
-        variant: "destructive",
-      })
-      return
-    }
+ if (!formData.descripcion || !formData.clienteId) {
+  toast({
+    title: "Error",
+    description: "Descripción y cliente son campos obligatorios",
+    variant: "destructive",
+  });
+  return;
+}
 
-    if (!isEditing && !formData.file) {
+
+    if (!isEditing && !formData.archivos) {
       toast({
         title: "Error",
         description: "Debe adjuntar un archivo de contrato",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     try {
-      setLoading(true)
+      setLoading(true);
       if (isEditing) {
-        await updateContract(contract.id, formData)
+        await updateContract({
+          id: contract?.id || 0,
+          descripcion: formData.descripcion,
+          estado: formData.estado,
+          creado: formData.creado,
+          vencimiento: formData.vencimiento,
+          clienteId: formData.clienteId,
+          clienteNombre: "", // o asigna si lo tienes
+          serviciosId: formData.serviciosId,
+          servicio: "", // opcional si no lo necesitas
+          empresa: formData.empresa,
+          tipoContrato: formData.tipoContrato,
+          empresaPropietario: formData.empresaPropietario,
+          archivos: formData.archivos, // 👈 aquí cambias 'file' por 'archivos'
+        });
         toast({
           title: "Contrato actualizado",
           description: "El contrato ha sido actualizado exitosamente",
-        })
+        });
       } else {
-        await createContract(formData)
+        await createContract({
+          id: contract?.id || 0,
+          descripcion: formData.descripcion,
+          estado: formData.estado,
+          creado: formData.creado,
+          vencimiento: formData.vencimiento,
+          clienteId: formData.clienteId,
+          clientId: formData.clienteId, // en caso de que lo uses internamente también
+          clienteNombre: "", // o asigna si lo tienes
+          serviciosId: formData.serviciosId,
+          servicio: "", // opcional si no lo necesitas
+          empresa: formData.empresa,
+          tipoContrato: formData.tipoContrato,
+          empresaPropietario: formData.empresaPropietario,
+          archivos: formData.archivos, // 👈 aquí cambias 'file' por 'archivos'
+        });
+
         toast({
           title: "Contrato creado",
           description: "El contrato ha sido creado exitosamente",
-        })
+        });
       }
-      onSuccess()
+      onSuccess();
     } catch (error) {
-      console.error("Error saving contract:", error)
+      console.error("Error saving contract:", error);
       toast({
         title: "Error",
         description: "No se pudo guardar el contrato",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{isEditing ? "Editar Contrato" : "Nuevo Contrato"}</CardTitle>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Título del Contrato *</Label>
-              <Input id="title" name="title" value={formData.title} onChange={handleChange} required />
-            </div>
+    <div className="min-h-screen bg-gray-100">
+      <div className="py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center">
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Nuevo Contrato
+            </h1>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="clientId">Cliente *</Label>
-              <Select
-                value={formData.clientId}
-                onValueChange={(value) => setFormData((prev) => ({ ...prev, clientId: value }))}
-                disabled={!!client}
+          <div className="mt-6 bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-8 divide-y divide-gray-200"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Información del Contrato
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Ingrese la información básica del contrato.
+                  </p>
 
-            <div className="space-y-2">
-              <Label>Fecha de Inicio</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.startDate && "text-muted-foreground",
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.startDate ? format(formData.startDate, "PPP", { locale: es }) : "Seleccionar fecha"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={formData.startDate}
-                    onSelect={(date) => setFormData((prev) => ({ ...prev, startDate: date }))}
-                    initialFocus
+                  <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <div className="sm:col-span-3">
+                      <label
+                        htmlFor="descripcion"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Descripción
+                      </label>
+                      <input
+                        type="text"
+                        name="descripcion"
+                        id="descripcion"
+                        value={formData.descripcion}
+                        onChange={handleChange}
+                        className="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                        placeholder="Ej: Mantenimiento Anual"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Estado
+                      </label>
+                      <select
+                        name="estado"
+                        value={formData.estado}
+                        onChange={handleChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                      >
+                      <option value="">Seleccione un Estado</option>
+                        <option value="0">Activo</option>
+                        <option value="1">Por vencer</option>
+                        <option value="2">Vencido</option>
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Cliente
+                      </label>
+                      <select
+                        name="clienteId"
+                        value={formData.clienteId}
+                        onChange={handleChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                      >
+                        <option value="">Seleccione un cliente</option>
+                        {clients.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Servicio
+                      </label>
+                      <select
+                        name="serviciosId"
+                        value={formData.serviciosId}
+                        onChange={handleChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                      >
+                        <option value="">Seleccione un servicio</option>
+                        {services.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.descripcion}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Empresa
+                      </label>
+                      <select
+                        name="empresa"
+                        value={formData.empresa}
+                        onChange={handleChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                      >
+                        <option value="">Seleccione una empresa</option>
+                        {companies.map((e) => (
+                          <option key={e.id} value={e.nombreEmpresa}>
+                            {e.nombreEmpresa}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Proterio
+                      </label>
+                      <select
+                        name="empresaPropietario"
+                        value={formData.empresaPropietario}
+                        onChange={handleChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                      >
+                        <option value="">Seleccione una empresa</option>
+                        {companies.map((e) => (
+                          <option key={e.id} value={e.propetario}>
+                            {e.propetario}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Tipo de Contrato
+                      </label>
+                      <select
+                        name="tipoContrato"
+                        value={formData.tipoContrato}
+                        onChange={handleChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                      >
+                        <option value="">Seleccione un tipo</option>
+                        {contractTypes.map((t) => (
+                          <option key={t.id} value={t.descripcion}>
+                            {t.descripcion}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Fecha de Inicio
+                      </label>
+                      <input
+                        type="date"
+                        name="creado"
+                        value={formData.creado}
+                        onChange={handleChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Fecha de Vencimiento
+                      </label>
+                      <input
+                        type="date"
+                        name="vencimiento"
+                        value={formData.vencimiento}
+                        onChange={handleChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-8">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Archivo del Contrato
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Suba el documento del contrato firmado.
+                  </p>
+
+                  <input
+                    type="file"
+                    name="file"
+                    onChange={handleFileChange}
+                    className="mt-4"
                   />
-                </PopoverContent>
-              </Popover>
-            </div>
+                </div>
 
-            <div className="space-y-2">
-              <Label>Fecha de Vencimiento</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.expirationDate && "text-muted-foreground",
-                    )}
+                <div className="pt-5 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={onCancel}
+                    className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.expirationDate
-                      ? format(formData.expirationDate, "PPP", { locale: es })
-                      : "Seleccionar fecha"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={formData.expirationDate}
-                    onSelect={(date) => setFormData((prev) => ({ ...prev, expirationDate: date }))}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    {loading
+                      ? "Guardando..."
+                      : isEditing
+                      ? "Actualizar"
+                      : "Guardar..."}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
-            <Textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={2}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notas Internas</Label>
-            <Textarea id="notes" name="notes" value={formData.notes} onChange={handleChange} rows={2} />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="file">Archivo de Contrato {!isEditing && "*"}</Label>
-            <div className="flex items-center gap-2">
-              <Input id="file" type="file" accept=".pdf,.doc,.docx" onChange={handleFileChange} className="hidden" />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => document.getElementById("file").click()}
-                className="w-full"
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                {fileSelected ? "Archivo seleccionado" : isEditing ? "Reemplazar archivo" : "Seleccionar archivo"}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex justify-between">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={loading}>
-            {loading ? "Guardando..." : isEditing ? "Actualizar" : "Guardar"}
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
-  )
+        </div>
+      </div>
+    </div>
+  );
 }
-
