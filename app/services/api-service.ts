@@ -1,5 +1,7 @@
 // services/api-service.ts
 
+import { toast } from "sonner";
+
 const API_BASE_URL = "http://10.0.0.15:5210/api";
 
 // DASHBOARD
@@ -126,96 +128,35 @@ export const fetchContracts = async () => {
   return await res.json();
 };
 
-export const createContract = async (formData: {
-  id: any;
-  descripcion: any;
-  estado: any;
-  clienteNombre: any;
-  clientId: any;
-  creado: any;
-  vencimiento: any;
-  clienteId: any;
-  serviciosId: any;
-  servicio: any;
-  empresa: any;
-  tipoContrato: any;
-  empresaPropietario: any;
-  archivos: any;
-}) => {
-  const data = new FormData();
-
-data.append("descripcion", formData.descripcion);
-data.append("estado", formData.estado);
-data.append("creado", formData.creado); // ya está en formato 'YYYY-MM-DD'
-data.append("vencimiento", formData.vencimiento);
-data.append("clienteId", formData.clienteId.toString());
-data.append("serviciosId", formData.serviciosId.toString());
-data.append("empresa", formData.empresa.toString());
-data.append("tipoContrato", formData.tipoContrato.toString());
-data.append("empresaPropietario", formData.empresaPropietario.toString());
-if (formData.archivos) {
-  data.append("file", formData.archivos);
-}
-
-  if (formData.archivos) {
-    data.append("file", formData.archivos);
-  }
-console.log("Datos enviados al backend:", {
-  descripcion: formData.descripcion,
- estado: Number(formData.estado), 
-  creado: formData.creado,
-  vencimiento: formData.vencimiento,
-  clienteId: Number(formData.clienteId), 
-  serviciosId: Number(formData.serviciosId),
-  empresa: formData.empresa,
-  tipoContrato: Number(formData.tipoContrato),
-  empresaPropietario: formData.empresaPropietario,
-});
-
-  const res = await fetch(`${API_BASE_URL}/Contrato/create`, {
+export const createContract = async (data: FormData) => {
+  const res = await fetch("http://10.0.0.15:5210/api/Contrato/create", {
     method: "POST",
     body: data,
   });
 
-  if (!res.ok) throw new Error("Error al crear contrato");
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error("Error al subir el contrato: " + text);
+  }
+
   return await res.json();
 };
 
-export const updateContract = async (
-  formData: {
-     id: any;
-  descripcion: any;
-  estado: any;
-  clienteNombre: any;
-  creado: any;
-  vencimiento: any;
-  clienteId: any;
-  serviciosId: any;
-  servicio: any;
-  empresa: any;
-  tipoContrato: any;
-  empresaPropietario: any;
-  archivos: any;
-  }
-) => {
-  const data = new FormData();
 
-  data.append("id", id);
-  data.append("clienteId", formData.clienteId);
-  data.append("descripcion", formData.descripcion);
-  data.append("vencimiento", formData.vencimiento.toISOString());
-  data.append("creado", formData.creado.toISOString());
 
-  if (formData.archivos) {
-    data.append("file", formData.archivos);
-  }
-
-  const res = await fetch(`${API_BASE_URL}/Contrato/${id}`, {
-    method: "PUT",
-    body: data,
+export const updateContract = async (formData: any) => {
+  const res = await fetch(`http://10.0.0.15:5210/api/Contrato/update`, {
+    method: "PUT", // Usa POST si tu backend no admite PUT
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
   });
 
-  if (!res.ok) throw new Error("Error al actualizar contrato");
+  if (!res.ok) {
+    throw new Error("Error al actualizar contrato");
+  }
+
   return await res.json();
 };
 
@@ -254,5 +195,30 @@ export const downloadContract = async (id: string) => {
   } catch (error) {
     console.error("Error downloading contract:", error);
     throw error;
+  }
+};
+
+export const viewContractPdf = async (fileId: number) => {
+  try {
+    const response = await fetch(`http://10.0.0.15:5210/api/Archivos/ver/${fileId}`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al visualizar el contrato: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    // Abre el PDF en una nueva pestaña
+    window.open(url, "_blank");
+
+    // Opcional: limpia el objeto después
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+    }, 100);
+  } catch (error) {
+    console.error("Error visualizando el PDF:", error);
   }
 };

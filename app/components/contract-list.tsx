@@ -1,25 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Edit, Trash, Download, Eye, X } from "lucide-react";
 import {
@@ -27,9 +5,12 @@ import {
   fetchClients,
   deleteContract,
   downloadContract,
+  viewContractPdf,
 } from "../services/api-service";
 import { useToast } from "@/hooks/use-toast";
-import ContractForm from "../components/contract-form"; // Ajusta ruta si hace falta
+import ContractForm from "./contract-form"; // Ajusta ruta si hace falta
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface ContractListProps {
   onAddNew: () => void;
@@ -84,7 +65,7 @@ export default function ContractListPreview({
     }
   };
 
-  const handleDeleteContract = async (id: string) => {
+  const handleDeleteContract = async (id) => {
     if (
       confirm(
         "¿Está seguro que desea eliminar este contrato? Esta acción no se puede deshacer."
@@ -108,7 +89,7 @@ export default function ContractListPreview({
     }
   };
 
-  const handleDownload = async (id: string, title: string) => {
+  const handleDownload = async (id, title) => {
     try {
       await downloadContract(id);
       toast({
@@ -125,7 +106,7 @@ export default function ContractListPreview({
     }
   };
 
-  const handleClientChange = (value: string) => {
+  const handleClientChange = (value) => {
     setClientFilter(value);
     if (value !== "all") {
       const client = clients.find((c) => c.id === value);
@@ -146,9 +127,9 @@ export default function ContractListPreview({
 
     if (daysRemaining < 0) {
       return <Badge variant="destructive">Vencido</Badge>;
-    } else if (daysRemaining <= 30) {
+    } else if (daysRemaining <= 60) {
       return <Badge variant="destructive">Vence pronto</Badge>;
-    } else if (daysRemaining <= 90) {
+    } else if (daysRemaining <= 30) {
       return <Badge variant="secondary">Activo</Badge>;
     } else {
       return <Badge variant="secondary">Activo</Badge>;
@@ -196,13 +177,13 @@ export default function ContractListPreview({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-semibold text-gray-900">Contratos</h1>
-       <button
-  type="button"
-  onClick={onAddNew}
-  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
->
-  Nuevo Contrato
-</button>
+            <button
+              type="button"
+              onClick={onAddNew}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Nuevo Contrato
+            </button>
           </div>
 
           <div className="mt-4 bg-white shadow overflow-hidden sm:rounded-md">
@@ -337,25 +318,22 @@ export default function ContractListPreview({
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {getStatusBadge(contract.vencimiento)}
+                          {getStatusBadge(contract.estado)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <div className="flex space-x-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() =>
-                                handleDownload(
-                                  contract.id,
-                                  contract.tipoContrato
-                                )
-                              }
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
+                            {contract.archivos.map((archivo: any) => (
+                              <a
+                              key={archivo.id}
+                               onClick={() => viewContractPdf(archivo.id)}
+                              >
+                                <Eye className="h-6 w-6" />
+                              </a>
+                            ))}
+
                             <a
                               href="#"
-                              onClick={() => openViewForm(contract)}
+                            
                               className="text-indigo-600 hover:text-indigo-900"
                             >
                               Ver

@@ -26,6 +26,7 @@ export default function ContractFormPreview({
   const [clients, setClients] = useState([]);
   const [Estado, setEstado] = useState([]);
   const [services, setServices] = useState([]);
+  const [empresas, setEmpresas] = useState<any[]>([]);
   const [companies, setCompanies] = useState([]);
   const [contractTypes, setContractTypes] = useState([]);
 
@@ -34,10 +35,10 @@ export default function ContractFormPreview({
     estado: contract?.estado || "Activo",
     clienteId: contract?.clienteId || client?.id || "",
     serviciosId: contract?.serviciosId || "",
-    empresa: contract?.empresa || "",
-    tipoContrato: contract?.tipoContrato || "",
+    empresaId: contract?.empresaId || "",
+    tipoContratoId: contract?.TipoContratoId || "",
     empresaPropietario: contract?.empresaPropietario || "",
-    creado: contract?.creado ? contract.creado.substring(0, 10) : "", // YYYY-MM-DD
+    creado: contract?.creado ? contract.creado.substring(0, 10) : "",
     vencimiento: contract?.vencimiento
       ? contract.vencimiento.substring(0, 10)
       : "",
@@ -99,34 +100,56 @@ export default function ContractFormPreview({
     }
   }, [client]);
 
+  useEffect(() => {
+    const fetchEmpresas = async () => {
+      try {
+        const res = await fetch("http://10.0.0.15:5210/api/Empresa");
+        const data = await res.json();
+        setEmpresas(data);
+      } catch (error) {
+        console.error("Error cargando empresas:", error);
+      }
+    };
+
+    fetchEmpresas();
+  }, []);
+
   const handleChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const numericFields = [
+      "ClienteId",
+      "Servicios",
+      "EmpresaId",
+      "TipoContratoId",
+      "EmpresaPropietario",
+    ];
+    setFormData((prev) => ({
+      ...prev,
+      [name]: numericFields.includes(name) ? Number(value) : value,
+    }));
   };
 
-const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (file) {
-    setFormData((prev) => ({ ...prev, archivos: file }));
-    setFileSelected(true);
-  }
-};
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const archivo = e.target.files?.[0];
+    if (archivo) {
+      setFormData((prev) => ({
+        ...prev,
+        archivos: archivo,
+      }));
+    }
+  };
 
-
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
-    console.log("Archivo seleccionado:", formData.archivos);
-    console.log("Se hizo submit");
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
- if (!formData.descripcion || !formData.clienteId) {
-  toast({
-    title: "Error",
-    description: "Descripción y cliente son campos obligatorios",
-    variant: "destructive",
-  });
-  return;
-}
-
+    if (!formData.descripcion || !formData.clienteId) {
+      toast({
+        title: "Error",
+        description: "Descripción y cliente son campos obligatorios",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (!isEditing && !formData.archivos) {
       toast({
@@ -139,49 +162,35 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
     try {
       setLoading(true);
+
+      const data = new FormData();
+      data.append("descripcion", formData.descripcion);
+      data.append("estado", String(formData.estado)); // Enum como número
+      data.append("creado", new Date(formData.creado).toISOString());
+      data.append("vencimiento", new Date(formData.vencimiento).toISOString());
+      data.append("clienteId", String(formData.clienteId));
+      data.append("serviciosId", String(formData.serviciosId));
+      data.append("empresaId", String(formData.empresaId)); // 👈 NOMBRE CORRECTO
+      data.append("tipoContratoId", String(formData.tipoContratoId)); // 👈 NOMBRE CORRECTO
+
+      if (formData.archivos) {
+        data.append("archivos", formData.archivos); // 👈 NOMBRE EXACTO
+      }
+
       if (isEditing) {
-        await updateContract({
-          id: contract?.id || 0,
-          descripcion: formData.descripcion,
-          estado: formData.estado,
-          creado: formData.creado,
-          vencimiento: formData.vencimiento,
-          clienteId: formData.clienteId,
-          clienteNombre: "", // o asigna si lo tienes
-          serviciosId: formData.serviciosId,
-          servicio: "", // opcional si no lo necesitas
-          empresa: formData.empresa,
-          tipoContrato: formData.tipoContrato,
-          empresaPropietario: formData.empresaPropietario,
-          archivos: formData.archivos, // 👈 aquí cambias 'file' por 'archivos'
-        });
+        await updateContract(data); // Asegúrate que update también acepte FormData
         toast({
           title: "Contrato actualizado",
           description: "El contrato ha sido actualizado exitosamente",
         });
       } else {
-        await createContract({
-          id: contract?.id || 0,
-          descripcion: formData.descripcion,
-          estado: formData.estado,
-          creado: formData.creado,
-          vencimiento: formData.vencimiento,
-          clienteId: formData.clienteId,
-          clientId: formData.clienteId, // en caso de que lo uses internamente también
-          clienteNombre: "", // o asigna si lo tienes
-          serviciosId: formData.serviciosId,
-          servicio: "", // opcional si no lo necesitas
-          empresa: formData.empresa,
-          tipoContrato: formData.tipoContrato,
-          empresaPropietario: formData.empresaPropietario,
-          archivos: formData.archivos, // 👈 aquí cambias 'file' por 'archivos'
-        });
-
+        await createContract(data);
         toast({
           title: "Contrato creado",
           description: "El contrato ha sido creado exitosamente",
         });
       }
+
       onSuccess();
     } catch (error) {
       console.error("Error saving contract:", error);
@@ -248,7 +257,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                         onChange={handleChange}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
                       >
-                      <option value="">Seleccione un Estado</option>
+                        <option value="">Seleccione un Estado</option>
                         <option value="0">Activo</option>
                         <option value="1">Por vencer</option>
                         <option value="2">Vencido</option>
@@ -298,15 +307,19 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                         Empresa
                       </label>
                       <select
-                        name="empresa"
-                        value={formData.empresa}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                        name="empresaId"
+                        value={formData.empresaId}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            empresaId: parseInt(e.target.value) || 0,
+                          }))
+                        }
                       >
                         <option value="">Seleccione una empresa</option>
-                        {companies.map((e) => (
-                          <option key={e.id} value={e.nombreEmpresa}>
-                            {e.nombreEmpresa}
+                        {empresas.map((empresa) => (
+                          <option key={empresa.id} value={empresa.id}>
+                            {empresa.nombreEmpresa}
                           </option>
                         ))}
                       </select>
@@ -314,7 +327,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
                     <div className="sm:col-span-3">
                       <label className="block text-sm font-medium text-gray-700">
-                        Proterio
+                        Propietario
                       </label>
                       <select
                         name="empresaPropietario"
@@ -324,7 +337,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                       >
                         <option value="">Seleccione una empresa</option>
                         {companies.map((e) => (
-                          <option key={e.id} value={e.propetario}>
+                          <option key={e.id} value={e.id}>
                             {e.propetario}
                           </option>
                         ))}
@@ -336,14 +349,19 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                         Tipo de Contrato
                       </label>
                       <select
-                        name="tipoContrato"
-                        value={formData.tipoContrato}
-                        onChange={handleChange}
+                        name="TipoContratoId"
+                        value={formData.tipoContratoId}
+                           onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            tipoContratoId: parseInt(e.target.value) || 0,
+                          }))
+                        }
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
                       >
                         <option value="">Seleccione un tipo</option>
                         {contractTypes.map((t) => (
-                          <option key={t.id} value={t.descripcion}>
+                          <option key={t.id} value={t.id}>
                             {t.descripcion}
                           </option>
                         ))}
@@ -388,7 +406,8 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
                   <input
                     type="file"
-                    name="file"
+                    name="Archivos"
+                    accept=".pdf"
                     onChange={handleFileChange}
                     className="mt-4"
                   />

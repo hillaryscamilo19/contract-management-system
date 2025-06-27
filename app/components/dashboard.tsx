@@ -10,7 +10,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CalendarClock, Users, FileText, AlertTriangle } from "lucide-react";
-import { fetchClients, fetchContracts, fetchDashboardData } from "../services/api-service";
+import {
+  fetchClients,
+  fetchContracts,
+  fetchDashboardData,
+} from "../services/api-service";
 import { toast } from "sonner";
 
 interface DashboardProps {
@@ -71,29 +75,26 @@ export default function DashboardPreview({
     loadData();
   }, []);
 
+  function calcularDiasRestantes(vencimiento: string | undefined | null) {
+    if (!vencimiento) return "—"; // o podrías devolver "0" o "N/A"
 
+    let fecha: Date;
 
-function calcularDiasRestantes(vencimiento: string | undefined | null) {
-  if (!vencimiento) return "—"; // o podrías devolver "0" o "N/A"
+    try {
+      fecha = vencimiento.includes("/")
+        ? new Date(vencimiento.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3"))
+        : new Date(vencimiento);
 
-  let fecha: Date;
+      if (isNaN(fecha.getTime())) return "—"; // fecha inválida
+    } catch (err) {
+      console.error("Error procesando la fecha:", err);
+      return "—";
+    }
 
-  try {
-    fecha = vencimiento.includes("/")
-      ? new Date(vencimiento.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3"))
-      : new Date(vencimiento);
-
-    if (isNaN(fecha.getTime())) return "—"; // fecha inválida
-  } catch (err) {
-    console.error("Error procesando la fecha:", err);
-    return "—";
+    const hoy = new Date();
+    const diferencia = fecha.getTime() - hoy.getTime();
+    return Math.ceil(diferencia / (1000 * 60 * 60 * 24));
   }
-
-  const hoy = new Date();
-  const diferencia = fecha.getTime() - hoy.getTime();
-  return Math.ceil(diferencia / (1000 * 60 * 60 * 24));
-}
-
 
   const loadData = async () => {
     try {
@@ -310,20 +311,21 @@ function calcularDiasRestantes(vencimiento: string | undefined | null) {
                       {expiringContracts.map((contract: any) => (
                         <tr key={contract.id}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
-                            {contract.tipoContrato}
+                            {contract.tipoContrato || "NAN"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {contract.descripcion}
+                            {contract.descripcion || "NAN"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {contract.empresa}
+                            {contract.empresa || "NAN"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {contract.servicio}
+                            {contract.servicio || "NAN"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-red-500 font-medium">
                             {/* Puedes calcular días restantes */}
-                            {calcularDiasRestantes(contract.vencimiento)} días
+                            {calcularDiasRestantes(contract.vencimiento)}||
+                            "NAN" días
                           </td>
                         </tr>
                       ))}
@@ -374,39 +376,19 @@ function calcularDiasRestantes(vencimiento: string | undefined | null) {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      <tr>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
-                          Empresa ABC
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          contacto@empresaabc.com
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          3
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
-                          Corporación XYZ
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          info@corporacionxyz.com
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          2
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
-                          Industrias DEF
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          ventas@industriasdef.com
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          1
-                        </td>
-                      </tr>
+                      {clients.map((client: any) => (
+                        <tr key={client.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+                            {client.name || "Sin nombre"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {client.email || "—"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {client.cantidadContratos || 0}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
