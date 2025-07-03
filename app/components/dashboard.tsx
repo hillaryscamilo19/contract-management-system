@@ -55,6 +55,7 @@ export default function DashboardPreview({
   const [editingContract, setEditingContract] = useState<any | null>(null);
   const [viewOnly, setViewOnly] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const [formData, setFormData] = useState<FormData>({
     id: "",
     descripcion: "",
@@ -169,7 +170,7 @@ export default function DashboardPreview({
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">
-                        Contratos Totales
+                        Documento Totales
                       </dt>
                       <dd>
                         <div className="text-lg font-medium text-gray-900">
@@ -204,7 +205,7 @@ export default function DashboardPreview({
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">
-                        Clientes
+                        Proverdor
                       </dt>
                       <dd>
                         <div className="text-lg font-medium text-gray-900">
@@ -239,7 +240,7 @@ export default function DashboardPreview({
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">
-                        Contratos por Vencer
+                        Documento por Vencer
                       </dt>
                       <dd>
                         <div className="text-lg font-medium text-gray-900">
@@ -260,7 +261,7 @@ export default function DashboardPreview({
               <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg leading-6 font-medium text-gray-900">
-                    Contratos por Vencer
+                    Documento por Vencer
                   </h3>
                   <a
                     href="#"
@@ -279,7 +280,7 @@ export default function DashboardPreview({
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          Típo de Contrato
+                          Típo de Documento
                         </th>
                         <th
                           scope="col"
@@ -323,9 +324,7 @@ export default function DashboardPreview({
                             {contract.servicio || "NAN"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-red-500 font-medium">
-                            {/* Puedes calcular días restantes */}
-                            {calcularDiasRestantes(contract.vencimiento)}||
-                            "NAN" días
+                            {calcularDiasRestantes(contract.vencimiento)}
                           </td>
                         </tr>
                       ))}
@@ -340,7 +339,7 @@ export default function DashboardPreview({
               <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg leading-6 font-medium text-gray-900">
-                    Clientes Recientes
+                    Provedor Recientes
                   </h3>
                   <a
                     href="#"
@@ -371,7 +370,7 @@ export default function DashboardPreview({
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          Contratos
+                         Documento
                         </th>
                       </tr>
                     </thead>

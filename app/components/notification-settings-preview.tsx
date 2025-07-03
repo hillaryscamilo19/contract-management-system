@@ -7,7 +7,9 @@ export default function NotificationSettingsPreview() {
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <span className="text-xl font-bold text-gray-800">Sistema de Contratos</span>
+                <span className="text-xl font-bold text-gray-800">
+                  Sistema de Contratos
+                </span>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 <a
@@ -61,7 +63,9 @@ export default function NotificationSettingsPreview() {
       {/* Main content */}
       <div className="py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-semibold text-gray-900">Configuración de Notificaciones</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Configuración de Notificaciones
+          </h1>
 
           <div className="mt-6 bg-white shadow overflow-hidden sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
@@ -69,15 +73,20 @@ export default function NotificationSettingsPreview() {
                 <div className="space-y-8 divide-y divide-gray-200">
                   <div>
                     <div>
-                      <h3 className="text-lg leading-6 font-medium text-gray-900">Notificaciones por Email</h3>
+                      <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        Notificaciones por Email
+                      </h3>
                       <p className="mt-1 text-sm text-gray-500">
-                        Configure cuándo se enviarán notificaciones por email para los contratos por vencer.
+                        Configure cuándo se enviarán notificaciones por email
+                        para los contratos por vencer.
                       </p>
                     </div>
 
                     <div className="mt-6">
                       <fieldset>
-                        <legend className="text-base font-medium text-gray-900">Recordatorios de vencimiento</legend>
+                        <legend className="text-base font-medium text-gray-900">
+                          Recordatorios de vencimiento
+                        </legend>
                         <div className="mt-4 space-y-4">
                           <div className="relative flex items-start">
                             <div className="flex items-center h-5">
@@ -90,10 +99,16 @@ export default function NotificationSettingsPreview() {
                               />
                             </div>
                             <div className="ml-3 text-sm">
-                              <label htmlFor="notify-30" className="font-medium text-gray-700">
+                              <label
+                                htmlFor="notify-30"
+                                className="font-medium text-gray-700"
+                              >
                                 30 días antes del vencimiento
                               </label>
-                              <p className="text-gray-500">Enviar un primer recordatorio con un mes de anticipación.</p>
+                              <p className="text-gray-500">
+                                Enviar un primer recordatorio con un mes de
+                                anticipación.
+                              </p>
                             </div>
                           </div>
                           <div className="relative flex items-start">
@@ -107,10 +122,16 @@ export default function NotificationSettingsPreview() {
                               />
                             </div>
                             <div className="ml-3 text-sm">
-                              <label htmlFor="notify-15" className="font-medium text-gray-700">
+                              <label
+                                htmlFor="notify-15"
+                                className="font-medium text-gray-700"
+                              >
                                 15 días antes del vencimiento
                               </label>
-                              <p className="text-gray-500">Enviar un segundo recordatorio dos semanas antes.</p>
+                              <p className="text-gray-500">
+                                Enviar un segundo recordatorio dos semanas
+                                antes.
+                              </p>
                             </div>
                           </div>
                           <div className="relative flex items-start">
@@ -124,10 +145,15 @@ export default function NotificationSettingsPreview() {
                               />
                             </div>
                             <div className="ml-3 text-sm">
-                              <label htmlFor="notify-7" className="font-medium text-gray-700">
+                              <label
+                                htmlFor="notify-7"
+                                className="font-medium text-gray-700"
+                              >
                                 7 días antes del vencimiento
                               </label>
-                              <p className="text-gray-500">Enviar un recordatorio urgente una semana antes.</p>
+                              <p className="text-gray-500">
+                                Enviar un recordatorio urgente una semana antes.
+                              </p>
                             </div>
                           </div>
                           <div className="relative flex items-start">
@@ -141,11 +167,15 @@ export default function NotificationSettingsPreview() {
                               />
                             </div>
                             <div className="ml-3 text-sm">
-                              <label htmlFor="notify-1" className="font-medium text-gray-700">
+                              <label
+                                htmlFor="notify-1"
+                                className="font-medium text-gray-700"
+                              >
                                 1 día antes del vencimiento
                               </label>
                               <p className="text-gray-500">
-                                Enviar un recordatorio final el día anterior al vencimiento.
+                                Enviar un recordatorio final el día anterior al
+                                vencimiento.
                               </p>
                             </div>
                           </div>
@@ -156,14 +186,19 @@ export default function NotificationSettingsPreview() {
 
                   <div className="pt-8">
                     <div>
-                      <h3 className="text-lg leading-6 font-medium text-gray-900">Plantilla de Email</h3>
+                      <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        Plantilla de Email
+                      </h3>
                       <p className="mt-1 text-sm text-gray-500">
                         Personalice el contenido de los emails de notificación.
                       </p>
                     </div>
                     <div className="mt-6">
                       <div className="sm:col-span-6">
-                        <label htmlFor="email-template" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="email-template"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           Plantilla
                         </label>
                         <div className="mt-1">
@@ -173,18 +208,16 @@ export default function NotificationSettingsPreview() {
                             rows={10}
                             className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                             defaultValue={`Estimado/a {clientName},
-
-Le informamos que su contrato número {contractNumber} vencerá en {daysLeft} días ({expirationDate}).
-
-Por favor, póngase en contacto con nosotros para renovar su contrato.
-
-Saludos cordiales,
-El equipo de gestión de contratos`}
+                              Le informamos que su contrato número {contractNumber} vencerá en {daysLeft} días ({expirationDate}).
+                              Por favor, póngase en contacto con nosotros para renovar su contrato.
+                              Saludos cordiales,
+                              El equipo de gestión de contratos`}
                           />
                         </div>
                         <p className="mt-2 text-sm text-gray-500">
-                          Puede usar las siguientes variables: {"{clientName}"}, {"{contractNumber}"},{" "}
-                          {"{expirationDate}"}, {"{daysLeft}"}
+                          Puede usar las siguientes variables: {"{clientName}"},{" "}
+                          {"{contractNumber}"}, {"{expirationDate}"},{" "}
+                          {"{daysLeft}"}
                         </p>
                       </div>
                     </div>
@@ -192,14 +225,20 @@ El equipo de gestión de contratos`}
 
                   <div className="pt-8">
                     <div>
-                      <h3 className="text-lg leading-6 font-medium text-gray-900">Probar Notificaciones</h3>
+                      <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        Probar Notificaciones
+                      </h3>
                       <p className="mt-1 text-sm text-gray-500">
-                        Envíe un email de prueba para verificar la configuración.
+                        Envíe un email de prueba para verificar la
+                        configuración.
                       </p>
                     </div>
                     <div className="mt-6 flex items-center">
                       <div className="w-96">
-                        <label htmlFor="test-email" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="test-email"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           Email de prueba
                         </label>
                         <div className="mt-1">
@@ -244,5 +283,5 @@ El equipo de gestión de contratos`}
         </div>
       </div>
     </div>
-  )
+  );
 }

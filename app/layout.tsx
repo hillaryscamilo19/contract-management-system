@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { DocumentCurrencyBangladeshiIcon } from "@heroicons/react/24/solid";
 
 export const metadata: Metadata = {
   title: "Registro de Documentos",

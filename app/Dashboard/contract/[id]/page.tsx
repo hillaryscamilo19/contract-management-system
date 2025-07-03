@@ -1,33 +1,97 @@
+"use client";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { getContractById } from "../services/api-service";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  fetchClients,
+  fetchContracts,
+  getContractById,
+} from "@/app/services/api-service";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
-import { Pencil, Badge, FileText, Download, Mail, AlertTriangle } from "lucide-react";
+import { Pencil, Badge, FileText, Download, AlertTriangle } from "lucide-react";
 import router from "next/router";
-import { Button } from "react-day-picker";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
-
-export default function ContractDetailView() {
+export default function ContractDetailPage() {
   const { id } = useParams();
   const [contract, setContract] = useState(null);
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await getContractById(id);
-      setContract(data);
+    loadClients();
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    const fetchContract = async () => {
+      if (!id) return;
+      try {
+        const data = await getContractById(id);
+        setContract(data);
+      } catch (error) {
+        console.error("Error al cargar contrato:", error);
+      }
     };
-    fetchData();
+
+    fetchContract();
   }, [id]);
 
-  if (!contract) return <div>Cargando...</div>;
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [contractsData, clientsData] = await Promise.all([
+        fetchContracts(),
+        fetchClients(),
+      ]);
+      setContract(contractsData);
+      setClients(clientsData);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los datos",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  function downloadFile(id: any): void {
-    throw new Error("Function not implemented.");
-  }
+  const loadClients = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchClients();
+      setClients(data);
+    } catch (error) {
+      console.error("Error loading clients:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los clientes",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!contract)
+    return (
+      <div className="p-4 flex justify-between items-center">
+        Cargando contrato...
+      </div>
+    );
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container max-w-max max-h-lvw mx-auto py-10 bg-slate-200">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Detalles del Contrato</h1>
         <div className="flex space-x-2">
@@ -47,27 +111,35 @@ export default function ContractDetailView() {
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-2xl">{contract.descripcion}</CardTitle>
+                  <CardTitle className="text-2xl">
+                    {contract.descripcion}
+                  </CardTitle>
                   <CardDescription>ID: {contract.id}</CardDescription>
                 </div>
                 <Badge
                   variant={
-                    contract.status === "Activo"
+                    contract.estado === "Activo"
                       ? "default"
-                      : contract.status === "ProximoAVencer"
-                        ? "warning"
-                        : "destructive"
+                      : contract.estado === "ProximoAVencer"
+                      ? "warning"
+                      : "Vencido"
                   }
                 >
-                  {contract.estado === "active" ? "Activo" : contract.estado === "expiring" ? "Por vencer" : "Vencido"}
+                  {contract.estado === "active"
+                    ? "Activo"
+                    : contract.estado === "expiring"
+                    ? "Por vencer"
+                    : "Vencido"}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <h3 className="font-medium mb-1">Cliente</h3>
-                <p>{contract.clienteNombre}</p>
-                <p className="text-sm text-gray-500">{contract.email}</p>
+                <p>{clients.name || "NAN"}</p>
+                <p className="text-sm text-gray-500">
+                  {clients.email || "NAN"}
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -104,12 +176,17 @@ export default function ContractDetailView() {
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     {contract.archivos.map((doc, index) => (
-                      <div key={index} className="flex justify-between items-center p-3 border rounded-md">
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-3 border rounded-md"
+                      >
                         <div className="flex items-center">
                           <FileText className="h-5 w-5 text-gray-500 mr-3" />
                           <div>
                             <p className="font-medium">{doc.fileName}</p>
-                            <p className="text-xs text-gray-500">Subido: {doc.createdAt}</p>
+                            <p className="text-xs text-gray-500">
+                              Subido: {doc.createdAt}
+                            </p>
                           </div>
                         </div>
                         <Button variant="ghost" size="sm">
@@ -129,14 +206,18 @@ export default function ContractDetailView() {
             <TabsContent value="history">
               <Card>
                 <CardContent className="p-6">
-                  <p className="text-gray-500 text-center py-4">No hay registros de historial disponibles.</p>
+                  <p className="text-gray-500 text-center py-4">
+                    No hay registros de historial disponibles.
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
             <TabsContent value="notes">
               <Card>
                 <CardContent className="p-6">
-                  <p className="text-gray-500 text-center py-4">No hay notas disponibles para este contrato.</p>
+                  <p className="text-gray-500 text-center py-4">
+                    No hay notas disponibles para este contrato.
+                  </p>
                 </CardContent>
                 <CardFooter>
                   <Button variant="outline" className="w-full">
@@ -154,24 +235,14 @@ export default function ContractDetailView() {
               <CardTitle>Acciones</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button className="w-full">
-                <Download className="mr-2 h-4 w-4" />
-                Descargar Contrato
-              </Button>
-
-              <Button className="w-full" variant="outline" onClick={sendNotification} disabled={isSending}>
-                <Mail className="mr-2 h-4 w-4" />
-                {isSending ? "Enviando..." : "Enviar Notificación"}
-              </Button>
-
               <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mt-4">
                 <div className="flex">
                   <AlertTriangle className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />
                   <div>
                     <h4 className="font-medium text-amber-800">Recordatorio</h4>
                     <p className="text-sm text-amber-700 mt-1">
-                      Este contrato vencerá en 245 días. Se enviará una notificación automática 30 días antes del
-                      vencimiento.
+                      Este contrato vencerá en 245 días. Se enviará una
+                      notificación automática 30 días antes del vencimiento...
                     </p>
                   </div>
                 </div>
@@ -188,12 +259,14 @@ export default function ContractDetailView() {
                 <p className="font-medium">Empresa ABC</p>
                 <p className="text-sm">contacto@abc.com</p>
                 <p className="text-sm">123-456-7890</p>
-                <p className="text-sm text-gray-500 mt-2">Persona de contacto: Juan Pérez</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Persona de contacto: Juan Pérez
+                </p>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -55,7 +55,7 @@ export const fetchDashboardData = async () => {
   };
 };
 
-// CLIENTES
+// CLIENTES Contratos Por ID
 export const fetchClients = async () => {
   const res = await fetch(`${API_BASE_URL}/Cliente`);
   if (!res.ok) throw new Error("Error al obtener clientes");
@@ -63,12 +63,31 @@ export const fetchClients = async () => {
 };
 
 //servicios
-export const fetchServicios = async () => {
-  const res = await fetch(`${API_BASE_URL}/Servicios`);
-  if (!res.ok) throw new Error("Error al obtener clientes");
-  return await res.json();
-};
+export async function fetchServicios() {
+  const response = await fetch("http://10.0.0.15:5210/api/Servicios/listar");
+  if (!response.ok) {
+    throw new Error("No se pudieron cargar los servicios");
+  }
+  return response.json();
+}
 
+//crearServicios
+export async function createServicio(data: { descripcion: string }) {
+  const response = await fetch("http://10.0.0.15:5210/api/Servicios/crear", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Error al crear el servicio");
+  }
+
+  return response.json();
+}
 
 //tipo de contracto
 export const fetchTiposContrato = async () => {
@@ -77,16 +96,20 @@ export const fetchTiposContrato = async () => {
   return await res.json();
 };
 
-//tipo de empresa
+// empresa & propietario
 export const fetchEmpresas = async () => {
   const res = await fetch(`${API_BASE_URL}/Empresa`);
-  if (!res.ok) throw new Error("Error al obtener clientes");
+  if (!res.ok) throw new Error("Error al obtener Empresa y propietario");
   return await res.json();
 };
 
-
 export const createClient = async (clientData: {
-name: any; email: any; phone: any; address: any; lastName: any; documento_Identidad: any
+  name: any;
+  email: any;
+  phone: any;
+  address: any;
+  lastName: any;
+  documento_Identidad: any;
 }) => {
   const res = await fetch(`${API_BASE_URL}/Cliente`, {
     method: "POST",
@@ -98,9 +121,31 @@ name: any; email: any; phone: any; address: any; lastName: any; documento_Identi
   return await res.json();
 };
 
+export async function getContractById(id: string | number) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/Contrato/${id}`); // ajusta la URL según tu API real
+    if (!response.ok) {
+      throw new Error(`Error al obtener contrato con id ${id}: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error en getContractById:", error);
+    throw error;
+  }
+}
+
+
 export const updateClient = async (
   id: any,
-  clientData: { name: any; email: any; phone: any; address: any; lastName: any; documento_Identidad: any }
+  clientData: {
+    name: any;
+    email: any;
+    phone: any;
+    address: any;
+    lastName: any;
+    documento_Identidad: any;
+  }
 ) => {
   const res = await fetch(`${API_BASE_URL}/Cliente/${id}`, {
     method: "PUT",
@@ -141,8 +186,6 @@ export const createContract = async (data: FormData) => {
 
   return await res.json();
 };
-
-
 
 export const updateContract = async (formData: any) => {
   const res = await fetch(`http://10.0.0.15:5210/api/Contrato/update`, {
@@ -200,9 +243,12 @@ export const downloadContract = async (id: string) => {
 
 export const viewContractPdf = async (fileId: number) => {
   try {
-    const response = await fetch(`http://10.0.0.15:5210/api/Archivos/ver/${fileId}`, {
-      method: "GET",
-    });
+    const response = await fetch(
+      `http://10.0.0.15:5210/api/Archivos/ver/${fileId}`,
+      {
+        method: "GET",
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Error al visualizar el contrato: ${response.status}`);

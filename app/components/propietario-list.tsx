@@ -8,9 +8,9 @@ import {
   viewContractPdf,
 } from "../services/api-service";
 import { useToast } from "@/hooks/use-toast";
-import ContractForm from "./contract-form"; 
+import ContractForm from "./contract-form"; // Ajusta ruta si hace falta
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface ContractListProps {
   onAddNew: () => void;
@@ -26,7 +26,7 @@ interface ContractFormProps {
   viewOnly?: boolean;
 }
 
-export default function ContractListPreview({
+export default function PropietarioListPreview({
   onAddNew,
   selectedClient,
   onSelectClient,
@@ -36,6 +36,7 @@ export default function ContractListPreview({
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [clientFilter, setClientFilter] = useState(selectedClient?.id || "all");
+  const [showEmpresaForm, setShowEmpresaForm] = useState(false);
   const { toast } = useToast();
 
   const [showForm, setShowForm] = useState(false);
@@ -61,6 +62,7 @@ export default function ContractListPreview({
       ]);
       setContracts(contractsData);
       setClients(clientsData);
+      
     } catch (error) {
       console.error("Error loading data:", error);
       toast({
@@ -97,62 +99,8 @@ export default function ContractListPreview({
     }
   };
 
-  const handleDownload = async (id, title) => {
-    try {
-      await downloadContract(id);
-      toast({
-        title: "Descarga iniciada",
-        description: `Descargando contrato: ${title}`,
-      });
-    } catch (error) {
-      console.error("Error downloading contract:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo descargar el contrato",
-        variant: "destructive",
-      });
-    }
-  };
 
-  const handleClientChange = (value) => {
-    setClientFilter(value);
-    if (value !== "all") {
-      const client = clients.find((c) => c.id === value);
-      if (client) {
-        onSelectClient(client);
-      }
-    } else {
-      onSelectClient(null);
-    }
-  };
-  const getStatusBadge = (estado: string) => {
-    switch (estado) {
-      case "Activo":
-        return (
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
-            Activo
-          </Badge>
-        );
-      case "ProximoAVencer":
-        return (
-          <Badge variant="warning" className="bg-yellow-100 text-yellow-800">
-            Por vencer
-          </Badge>
-        );
-      case "Vencido":
-        return (
-          <Badge variant="destructive" className="bg-red-100 text-red-800">
-            Vencido
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline" className="bg-gray-100 text-gray-800">
-            {estado}
-          </Badge>
-        );
-    }
-  };
+
 
   const filteredContracts = contracts.filter((contract) => {
     const matchesSearch =
@@ -194,13 +142,13 @@ export default function ContractListPreview({
       <div className="py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900">Contratos</h1>
+            <h1 className="text-2xl font-semibold text-gray-900">Empresa & Propietario</h1>
             <button
               type="button"
               onClick={onAddNew}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Nuevo Contrato
+              Nuevo Propietario
             </button>
           </div>
 
@@ -232,25 +180,11 @@ export default function ContractListPreview({
                       name="search"
                       id="search"
                       className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
-                      placeholder="Buscar contrato..."
+                      placeholder="Buscar Propietario..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
-                </div>
-                <div className="flex space-x-2">
-                  <select className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                    <option>Todos los estados</option>
-                    <option>Activos</option>
-                    <option>Por vencer</option>
-                    <option>Vencidos</option>
-                  </select>
-                  <select className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                    <option>Todos los clientes</option>
-                    <option>Empresa ABC</option>
-                    <option>Corporación XYZ</option>
-                    <option>Industrias DEF</option>
-                  </select>
                 </div>
               </div>
 
@@ -262,45 +196,21 @@ export default function ContractListPreview({
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
-                        Tipo De Cotrato
+                      propetario
                       </th>
                       <th
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
-                        descripcion
+                        Nombre Empresa
                       </th>
                       <th
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
-                        Provedor
+                        Email
                       </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Servicios
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Fecha de creacion
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Fecha de vencimiento
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Estado
-                      </th>
-                      <th
+                    <th
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
@@ -320,43 +230,19 @@ export default function ContractListPreview({
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {contract.clienteNombre}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-red-500 font-medium">
-                          {contract.servicio}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                            {new Date(contract.creado).toLocaleDateString()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                            {new Date(
-                              contract.vencimiento
-                            ).toLocaleDateString()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {getStatusBadge(contract.estado)}
-                        </td>
+         
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <div className="flex space-x-2">
-                            {contract.archivos.map((archivo: any) => (
-                              <a
-                                key={archivo.id}
-                                onClick={() => viewContractPdf(archivo.id)}
-                              >
-                                <Eye className="h-6 w-6" />
-                              </a>
-                            ))}
-
-                            <div>
-                              <Link
-                                href={`/Dashboard/contract/${contract.id}`}
-                                className="text-indigo-600 hover:text-indigo-900"
-                              >
-                                Ver
-                              </Link>
-                            </div>
+                
+                            <a
+                              href=""
+                              className="text-indigo-600 hover:text-indigo-900"
+                              onClick={() =>
+                                navigate(`/contratos/ver/${contract.id}`)
+                              }
+                            >
+                              Ver
+                            </a>
 
                             <a
                               href="#"
