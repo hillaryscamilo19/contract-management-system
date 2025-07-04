@@ -38,6 +38,9 @@ interface FormData {
   archivos: string;
 }
 
+
+
+
 export default function DashboardPreview({
   onCreateClient,
   onCreateContract,

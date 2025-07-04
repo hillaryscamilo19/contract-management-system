@@ -187,13 +187,13 @@ export const createContract = async (data: FormData) => {
   return await res.json();
 };
 
-export const updateContract = async (formData: any) => {
-  const res = await fetch(`http://10.0.0.15:5210/api/Contrato/update`, {
+export const updateContract = async (id: string) => {
+  const res = await fetch(`http://10.0.0.15:5210/api/Contrato/${id}`, {
     method: "PUT", // Usa POST si tu backend no admite PUT
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(formData),
+    body: JSON.stringify(FormData),
   });
 
   if (!res.ok) {

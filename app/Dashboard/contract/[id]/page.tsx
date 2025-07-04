@@ -91,9 +91,9 @@ export default function ContractDetailPage() {
     );
 
   return (
-    <div className="container max-w-max max-h-lvw mx-auto py-10 bg-slate-200">
+    <div className="container max-w-max h-full max-h-150 mx-auto py-10 ">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Detalles del Contrato</h1>
+        <h1 className="text-3xl font-bold">Detalles del Documento</h1>
         <div className="flex space-x-2">
           <Button variant="outline" onClick={() => router.back()}>
             Volver
@@ -174,27 +174,7 @@ export default function ContractDetailPage() {
             <TabsContent value="documents" className="mt-4">
               <Card>
                 <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {contract.archivos.map((doc, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-center p-3 border rounded-md"
-                      >
-                        <div className="flex items-center">
-                          <FileText className="h-5 w-5 text-gray-500 mr-3" />
-                          <div>
-                            <p className="font-medium">{doc.fileName}</p>
-                            <p className="text-xs text-gray-500">
-                              Subido: {doc.createdAt}
-                            </p>
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+           
                 </CardContent>
                 <CardFooter>
                   <Button variant="outline" className="w-full">
