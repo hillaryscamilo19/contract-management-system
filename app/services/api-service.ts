@@ -96,12 +96,7 @@ export const fetchTiposContrato = async () => {
   return await res.json();
 };
 
-// empresa & propietario
-export const fetchEmpresas = async () => {
-  const res = await fetch(`${API_BASE_URL}/Empresa`);
-  if (!res.ok) throw new Error("Error al obtener Empresa y propietario");
-  return await res.json();
-};
+
 
 export const createClient = async (clientData: {
   name: any;
@@ -202,6 +197,15 @@ export const updateContract = async (id: string) => {
 
   return await res.json();
 };
+
+export const fetchEmpresas = async () => {
+  const response = await fetch("http://10.0.0.15:5210/api/Empresa");
+  if (!response.ok) {
+    throw new Error("No se pudieron cargar las empresas");
+  }
+  return response.json();
+};
+
 
 export const deleteContract = async (id: string) => {
   const res = await fetch(`${API_BASE_URL}/Contrato/${id}`, {

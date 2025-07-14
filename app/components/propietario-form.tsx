@@ -1,6 +1,13 @@
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { fetchClients, fetchServicios, fetchEmpresas, fetchTiposContrato, updateContract, createContract } from "../services/api-service";
+import {
+  fetchClients,
+  fetchServicios,
+  fetchEmpresas,
+  fetchTiposContrato,
+  updateContract,
+  createContract,
+} from "../services/api-service";
 
 interface ConntractFormProps {
   contract?: any;
@@ -24,18 +31,9 @@ export default function PropietarioFormPreview({
   const [contractTypes, setContractTypes] = useState([]);
 
   const [formData, setFormData] = useState({
-    descripcion: contract?.descripcion || "",
-    estado: contract?.estado || "Activo",
-    clienteId: contract?.clienteId || client?.id || "",
-    serviciosId: contract?.serviciosId || "",
-    empresaId: contract?.empresaId || "",
-    tipoContratoId: contract?.TipoContratoId || "",
-    empresaPropietario: contract?.empresaPropietario || "",
-    creado: contract?.creado ? contract.creado.substring(0, 10) : "",
-    vencimiento: contract?.vencimiento
-      ? contract.vencimiento.substring(0, 10)
-      : "",
-    archivos: null,
+    propetario: contract?.propetario || "",
+    nombreEmpresa: contract?.nombreEmpresa || "",
+    email: contract?.email || "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -131,70 +129,54 @@ export default function PropietarioFormPreview({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!formData.descripcion || !formData.clienteId) {
-      toast({
-        title: "Error",
-        description: "Descripción y cliente son campos obligatorios",
-        variant: "destructive",
-      });
-      return;
+  if (!formData.propetario || !formData.nombreEmpresa || !formData.email) {
+    toast({
+      title: "Error",
+      description: "Todos los campos son obligatorios",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  try {
+    setLoading(true);
+    
+    const response = await fetch("http://10.0.0.15:5210/api/Empresa", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: 0, // como el backend espera esto
+        ...formData,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudo crear la empresa");
     }
 
-    if (!isEditing && !formData.archivos) {
-      toast({
-        title: "Error",
-        description: "Debe adjuntar un archivo de contrato",
-        variant: "destructive",
-      });
-      return;
-    }
+    toast({
+      title: "Empresa creada",
+      description: "La empresa fue registrada correctamente",
+    });
 
-    try {
-      setLoading(true);
+    onSuccess();
+  } catch (error) {
+    console.error("Error:", error);
+    toast({
+      title: "Error",
+      description: "No se pudo crear la empresa",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
-      const data = new FormData();
-      data.append("descripcion", formData.descripcion);
-      data.append("estado", String(formData.estado)); 
-      data.append("creado", new Date(formData.creado).toISOString());
-      data.append("vencimiento", new Date(formData.vencimiento).toISOString());
-      data.append("clienteId", String(formData.clienteId));
-      data.append("serviciosId", String(formData.serviciosId));
-      data.append("empresaId", String(formData.empresaId)); 
-      data.append("tipoContratoId", String(formData.tipoContratoId)); // 
-
-      if (formData.archivos) {
-        data.append("archivos", formData.archivos); 
-      }
-
-      if (isEditing) {
-        await updateContract(data); 
-        toast({
-          title: "Contrato actualizado",
-          description: "El contrato ha sido actualizado exitosamente",
-        });
-      } else {
-        await createContract(data);
-        toast({
-          title: "Contrato creado",
-          description: "El contrato ha sido creado exitosamente",
-        });
-      }
-
-      onSuccess();
-    } catch (error) {
-      console.error("Error saving contract:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo guardar el contrato",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -202,7 +184,7 @@ export default function PropietarioFormPreview({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center">
             <h1 className="text-2xl font-semibold text-gray-900">
-              Nuevo Contrato
+              Nueva Empresa
             </h1>
           </div>
 
@@ -214,10 +196,10 @@ export default function PropietarioFormPreview({
               >
                 <div>
                   <h3 className="text-lg font-medium text-gray-900">
-                    Información del Contrato
+                    Información de la empresa
                   </h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    Ingrese la información básica del contrato.
+                    Ingrese la información básica de la Empresa.
                   </p>
 
                   <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
@@ -226,183 +208,49 @@ export default function PropietarioFormPreview({
                         htmlFor="descripcion"
                         className="block text-sm font-medium text-gray-700"
                       >
-                        Descripción
+                        Propetario
                       </label>
                       <input
                         type="text"
-                        name="descripcion"
-                        id="descripcion"
-                        value={formData.descripcion}
+                        name="propetario"
+                        id="propetario"
+                        value={formData.propetario}
                         onChange={handleChange}
-                        className="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                        placeholder="Ej: Mantenimiento Anual"
+                        className="..."
+                        placeholder="Ej: Juan Pérez"
                       />
                     </div>
 
                     <div className="sm:col-span-3">
                       <label className="block text-sm font-medium text-gray-700">
-                        Estado
-                      </label>
-                      <select
-                        name="estado"
-                        value={formData.estado}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                      >
-                        <option value="">Seleccione un Estado</option>
-                        <option value="0">Activo</option>
-                        <option value="1">Por vencer</option>
-                        <option value="2">Vencido</option>
-                      </select>
-                    </div>
-
-                    <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Cliente
-                      </label>
-                      <select
-                        name="clienteId"
-                        value={formData.clienteId}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                      >
-                        <option value="">Seleccione un cliente</option>
-                        {clients.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Servicio
-                      </label>
-                      <select
-                        name="serviciosId"
-                        value={formData.serviciosId}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                      >
-                        <option value="">Seleccione un servicio</option>
-                        {services.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.descripcion}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Empresa
-                      </label>
-                      <select
-                        name="empresaId"
-                        value={formData.empresaId}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            empresaId: parseInt(e.target.value) || 0,
-                          }))
-                        }
-                      >
-                        <option value="">Seleccione una empresa</option>
-                        {empresas.map((empresa) => (
-                          <option key={empresa.id} value={empresa.id}>
-                            {empresa.nombreEmpresa}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Propietario
-                      </label>
-                      <select
-                        name="empresaPropietario"
-                        value={formData.empresaPropietario}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                      >
-                        <option value="">Seleccione una empresa</option>
-                        {companies.map((e) => (
-                          <option key={e.id} value={e.id}>
-                            {e.propetario}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Tipo de Contrato
-                      </label>
-                      <select
-                        name="TipoContratoId"
-                        value={formData.tipoContratoId}
-                           onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            tipoContratoId: parseInt(e.target.value) || 0,
-                          }))
-                        }
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                      >
-                        <option value="">Seleccione un tipo</option>
-                        {contractTypes.map((t) => (
-                          <option key={t.id} value={t.id}>
-                            {t.descripcion}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="sm:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Fecha de Inicio
+                        Nombre de la Empresa
                       </label>
                       <input
-                        type="date"
-                        name="creado"
-                        value={formData.creado}
+                        type="text"
+                        name="nombreEmpresa"
+                        id="nombreEmpresa"
+                        value={formData.nombreEmpresa}
                         onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                        className="..."
+                        placeholder="Ej: Soluciones SRL"
                       />
                     </div>
 
                     <div className="sm:col-span-3">
                       <label className="block text-sm font-medium text-gray-700">
-                        Fecha de Vencimiento
+                        Email
                       </label>
                       <input
-                        type="date"
-                        name="vencimiento"
-                        value={formData.vencimiento}
+                        type="email"
+                        name="email"
+                        id="email"
+                        value={formData.email}
                         onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                        className="..."
+                        placeholder="Ej: contacto@empresa.com"
                       />
                     </div>
                   </div>
-                </div>
-
-                <div className="pt-8">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Archivo del Contrato
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Suba el documento del contrato firmado.
-                  </p>
-
-                  <input
-                    type="file"
-                    name="Archivos"
-                    accept=".pdf"
-                    onChange={handleFileChange}
-                    className="mt-4"
-                  />
                 </div>
 
                 <div className="pt-5 flex justify-end">

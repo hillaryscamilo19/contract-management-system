@@ -53,10 +53,6 @@ export default function DashboardPreview({
   const [expiringContracts, setExpiringContracts] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [clients, setClients] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [editingContract, setEditingContract] = useState<any | null>(null);
-  const [viewOnly, setViewOnly] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState<FormData>({
@@ -342,7 +338,7 @@ export default function DashboardPreview({
               <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg leading-6 font-medium text-gray-900">
-                    Provedor Recientes
+                  Cliente Más Recientes
                   </h3>
                   <a
                     href="#"

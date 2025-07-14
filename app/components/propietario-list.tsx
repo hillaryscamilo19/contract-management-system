@@ -4,6 +4,7 @@ import {
   fetchContracts,
   fetchClients,
   deleteContract,
+  fetchEmpresas, // ✅ agrega esto
   downloadContract,
   viewContractPdf,
 } from "../services/api-service";
@@ -35,6 +36,7 @@ export default function PropietarioListPreview({
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [empresas, setEmpresas] = useState([]);
   const [clientFilter, setClientFilter] = useState(selectedClient?.id || "all");
   const [showEmpresaForm, setShowEmpresaForm] = useState(false);
   const { toast } = useToast();
@@ -52,28 +54,29 @@ export default function PropietarioListPreview({
       setClientFilter(selectedClient.id);
     }
   }, [selectedClient]);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [contractsData, clientsData] = await Promise.all([
-        fetchContracts(),
-        fetchClients(),
-      ]);
-      setContracts(contractsData);
-      setClients(clientsData);
-      
-    } catch (error) {
-      console.error("Error loading data:", error);
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar los datos",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+const loadData = async () => {
+  try {
+    setLoading(true);
+    const [contractsData, clientsData, empresasData] = await Promise.all([
+      fetchContracts(),
+      fetchClients(),
+      fetchEmpresas(), // ✅ aquí
+    ]);
+    setContracts(contractsData);
+    setClients(clientsData);
+    setEmpresas(empresasData); // ✅ guarda en estado
+  } catch (error) {
+    console.error("Error loading data:", error);
+    toast({
+      title: "Error",
+      description: "No se pudieron cargar los datos",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDeleteContract = async (id) => {
     if (
@@ -102,7 +105,7 @@ export default function PropietarioListPreview({
 
 
 
-  const filteredContracts = contracts.filter((contract) => {
+  const filteredContracts = empresas.filter((contract) => {
     const matchesSearch =
       (contract.descripcion || "")
         .toLowerCase()
@@ -117,14 +120,14 @@ export default function PropietarioListPreview({
     return matchesSearch && matchesClient;
   });
 
-  const openEditForm = (contract) => {
-    setEditingContract(contract);
+  const openEditForm = (empresas) => {
+    setEditingContract(empresas);
     setViewOnly(false);
     setShowForm(true);
   };
 
-  const openViewForm = (contract) => {
-    setEditingContract(contract);
+  const openViewForm = (empresas) => {
+    setEditingContract(empresas);
     setViewOnly(true);
     setShowForm(true);
   };
@@ -219,41 +222,32 @@ export default function PropietarioListPreview({
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredContracts.map((contract) => (
-                      <tr key={contract.id}>
+                    {empresas.map((empresa) => (
+                      <tr key={empresas.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
-                          {contract.tipoContrato}
+                          {empresa.propetario}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {contract.descripcion}
+                          {empresa.nombreEmpresa}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {contract.clienteNombre}
+                          {empresa.email}
                         </td>
          
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <div className="flex space-x-2">
                 
-                            <a
-                              href=""
-                              className="text-indigo-600 hover:text-indigo-900"
-                              onClick={() =>
-                                navigate(`/contratos/ver/${contract.id}`)
-                              }
-                            >
-                              Ver
-                            </a>
 
                             <a
                               href="#"
-                              onClick={() => openEditForm(contract)}
+                              onClick={() => openEditForm(empresas)}
                               className="text-yellow-600 hover:text-yellow-900"
                             >
                               Editar
                             </a>
                             <a
                               href="#"
-                              onClick={() => handleDeleteContract(contract.id)}
+                              onClick={() => handleDeleteContract(empresas.id)}
                               className="text-red-600 hover:text-red-900"
                             >
                               Eliminar

@@ -3,7 +3,6 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   fetchClients,
-  fetchContracts,
   getContractById,
 } from "@/app/services/api-service";
 import {
@@ -16,46 +15,41 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
 import { Pencil, Badge, FileText, Download, AlertTriangle } from "lucide-react";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export default function ContractDetailPage() {
   const { id } = useParams();
+  const router = useRouter();
+
   const [contract, setContract] = useState(null);
   const [clients, setClients] = useState([]);
+  const [clienteActual, setClienteActual] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadClients();
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    const fetchContract = async () => {
-      if (!id) return;
-      try {
-        const data = await getContractById(id);
-        setContract(data);
-      } catch (error) {
-        console.error("Error al cargar contrato:", error);
-      }
-    };
-
-    fetchContract();
+    if (id) {
+      loadContractData(id);
+    }
   }, [id]);
 
-  const loadData = async () => {
+  const loadContractData = async (contractId) => {
     try {
       setLoading(true);
-      const [contractsData, clientsData] = await Promise.all([
-        fetchContracts(),
+      const [contractData, clientList] = await Promise.all([
+        getContractById(contractId),
         fetchClients(),
       ]);
-      setContract(contractsData);
-      setClients(clientsData);
+      setContract(contractData);
+      setClients(clientList);
+
+      const clienteRelacionado = clientList.find(
+        (c) => c.id === contractData.clienteId
+      );
+      setClienteActual(clienteRelacionado);
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error("Error al cargar datos:", error);
       toast({
         title: "Error",
         description: "No se pudieron cargar los datos",
@@ -66,39 +60,20 @@ export default function ContractDetailPage() {
     }
   };
 
-  const loadClients = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchClients();
-      setClients(data);
-    } catch (error) {
-      console.error("Error loading clients:", error);
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar los clientes",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!contract)
-    return (
-      <div className="p-4 flex justify-between items-center">
-        Cargando contrato...
-      </div>
-    );
+  if (!contract) return <div className="p-4">Cargando contrato...</div>;
 
   return (
-    <div className="container max-w-max h-full max-h-150 mx-auto py-10 ">
+    <div className="container max-w-max h-full mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Detalles del Documento</h1>
         <div className="flex space-x-2">
           <Button variant="outline" onClick={() => router.back()}>
             Volver
           </Button>
-          <Button variant="outline">
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/contratos/editar/${contract.id}`)}
+          >
             <Pencil className="mr-2 h-4 w-4" />
             Editar
           </Button>
@@ -111,9 +86,7 @@ export default function ContractDetailPage() {
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-2xl">
-                    {contract.descripcion}
-                  </CardTitle>
+                  <CardTitle className="text-2xl">{contract.descripcion}</CardTitle>
                   <CardDescription>ID: {contract.id}</CardDescription>
                 </div>
                 <Badge
@@ -122,24 +95,18 @@ export default function ContractDetailPage() {
                       ? "default"
                       : contract.estado === "ProximoAVencer"
                       ? "warning"
-                      : "Vencido"
+                      : "destructive"
                   }
                 >
-                  {contract.estado === "active"
-                    ? "Activo"
-                    : contract.estado === "expiring"
-                    ? "Por vencer"
-                    : "Vencido"}
+                  {contract.estado}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <h3 className="font-medium mb-1">Cliente</h3>
-                <p>{clients.name || "NAN"}</p>
-                <p className="text-sm text-gray-500">
-                  {clients.email || "NAN"}
-                </p>
+                <p>{clienteActual?.nombre || "Desconocido"}</p>
+                <p className="text-sm text-gray-500">{clienteActual?.email || ""}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -174,7 +141,7 @@ export default function ContractDetailPage() {
             <TabsContent value="documents" className="mt-4">
               <Card>
                 <CardContent className="p-6">
-           
+                  <p>No hay documentos aún.</p>
                 </CardContent>
                 <CardFooter>
                   <Button variant="outline" className="w-full">
@@ -221,27 +188,10 @@ export default function ContractDetailPage() {
                   <div>
                     <h4 className="font-medium text-amber-800">Recordatorio</h4>
                     <p className="text-sm text-amber-700 mt-1">
-                      Este contrato vencerá en 245 días. Se enviará una
-                      notificación automática 30 días antes del vencimiento...
+                      Este contrato vencerá en X días. Se enviará una notificación automática {contract.notificationDays} días antes.
                     </p>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Información de Contacto</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="font-medium">Empresa ABC</p>
-                <p className="text-sm">contacto@abc.com</p>
-                <p className="text-sm">123-456-7890</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Persona de contacto: Juan Pérez
-                </p>
               </div>
             </CardContent>
           </Card>

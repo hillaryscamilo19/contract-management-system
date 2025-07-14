@@ -37,7 +37,7 @@ export default function Home() {
         >
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="dashboard">Home</TabsTrigger>
-            <TabsTrigger value="clients">Propietario</TabsTrigger>
+            <TabsTrigger value="clients">Cliente</TabsTrigger>
             <TabsTrigger value="contracts">Documentos</TabsTrigger>
             <TabsTrigger value="Services">Servicios</TabsTrigger>
             <TabsTrigger value="Propietario">Empresa & Propietario</TabsTrigger>
