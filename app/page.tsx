@@ -5,16 +5,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import ClientList from "./components/client-list";
 import ContractList from "./components/contract-list";
+import {
+  UserIcon,
+  EnvelopeIcon,
+  BuildingOffice2Icon,
+  PhoneIcon,
+  KeyIcon,
+  BellAlertIcon,
+} from "@heroicons/react/24/outline";
 import Dashboard from "./components/dashboard";
 import ClientForm from "./components/client-form";
 import ContractForm from "./components/contract-form";
 import ServicesForm from "./components/Services-form";
+
 import ServicesList from "./components/services-list";
 import PropietarioFormPreview from "./components/propietario-form";
 import PropietarioListPreview from "./components/propietario-list";
-
-
-
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -27,8 +33,10 @@ export default function Home() {
   return (
     <>
       <main className="flex min-h-screen flex-col p-4 md:p-8">
-        <h1 className="text-3xl font-bold mb-6">Registro de Documentos</h1>
-
+        <div>
+          <h1 className="text-3xl font-bold mb-6">Registro de Documentos</h1>
+          <BellAlertIcon width={25}></BellAlertIcon>
+        </div>
         <Tabs
           defaultValue="dashboard"
           value={activeTab}

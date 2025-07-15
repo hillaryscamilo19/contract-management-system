@@ -4,14 +4,11 @@ import {
   fetchContracts,
   fetchClients,
   deleteContract,
-  fetchEmpresas, // ✅ agrega esto
-  downloadContract,
-  viewContractPdf,
+  fetchEmpresas,
 } from "../services/api-service";
 import { useToast } from "@/hooks/use-toast";
-import ContractForm from "./contract-form"; // Ajusta ruta si hace falta
+import ContractForm from "./contract-form";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 
 interface ContractListProps {
   onAddNew: () => void;
@@ -19,26 +16,17 @@ interface ContractListProps {
   onSelectClient: (client: any) => void;
 }
 
-interface ContractFormProps {
-  contract?: any;
-  client?: any;
-  onCancel: () => void;
-  onSuccess: () => void;
-  viewOnly?: boolean;
-}
-
 export default function PropietarioListPreview({
   onAddNew,
   selectedClient,
   onSelectClient,
 }: ContractListProps) {
-  const [contracts, setContracts] = useState([]);
+  const [, setContracts] = useState([]);
   const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [empresas, setEmpresas] = useState([]);
   const [clientFilter, setClientFilter] = useState(selectedClient?.id || "all");
-  const [showEmpresaForm, setShowEmpresaForm] = useState(false);
   const { toast } = useToast();
 
   const [showForm, setShowForm] = useState(false);
@@ -54,29 +42,29 @@ export default function PropietarioListPreview({
       setClientFilter(selectedClient.id);
     }
   }, [selectedClient]);
-  
-const loadData = async () => {
-  try {
-    setLoading(true);
-    const [contractsData, clientsData, empresasData] = await Promise.all([
-      fetchContracts(),
-      fetchClients(),
-      fetchEmpresas(), // ✅ aquí
-    ]);
-    setContracts(contractsData);
-    setClients(clientsData);
-    setEmpresas(empresasData); // ✅ guarda en estado
-  } catch (error) {
-    console.error("Error loading data:", error);
-    toast({
-      title: "Error",
-      description: "No se pudieron cargar los datos",
-      variant: "destructive",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [contractsData, clientsData, empresasData] = await Promise.all([
+        fetchContracts(),
+        fetchClients(),
+        fetchEmpresas(),
+      ]);
+      setContracts(contractsData);
+      setClients(clientsData);
+      setEmpresas(empresasData);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los datos",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDeleteContract = async (id) => {
     if (
@@ -102,12 +90,10 @@ const loadData = async () => {
     }
   };
 
-
-
-
   const filteredContracts = empresas.filter((contract) => {
     const matchesSearch =
       (contract.descripcion || "")
+
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
       (contract.descripcion || "")
@@ -145,7 +131,9 @@ const loadData = async () => {
       <div className="py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900">Empresa & Propietario</h1>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Empresa & Propietario
+            </h1>
             <button
               type="button"
               onClick={onAddNew}
@@ -199,7 +187,7 @@ const loadData = async () => {
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
-                      propetario
+                        propetario
                       </th>
                       <th
                         scope="col"
@@ -213,7 +201,7 @@ const loadData = async () => {
                       >
                         Email
                       </th>
-                    <th
+                      <th
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
@@ -223,7 +211,7 @@ const loadData = async () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {empresas.map((empresa) => (
-                      <tr key={empresas.id}>
+                      <tr key={empresa.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
                           {empresa.propetario}
                         </td>
@@ -233,21 +221,19 @@ const loadData = async () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {empresa.email}
                         </td>
-         
+
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <div className="flex space-x-2">
-                
-
                             <a
                               href="#"
-                              onClick={() => openEditForm(empresas)}
+                              onClick={() => openEditForm(empresa)}
                               className="text-yellow-600 hover:text-yellow-900"
                             >
                               Editar
                             </a>
                             <a
                               href="#"
-                              onClick={() => handleDeleteContract(empresas.id)}
+                              onClick={() => handleDeleteContract(empresa.id)}
                               className="text-red-600 hover:text-red-900"
                             >
                               Eliminar

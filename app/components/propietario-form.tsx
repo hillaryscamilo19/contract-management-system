@@ -5,8 +5,6 @@ import {
   fetchServicios,
   fetchEmpresas,
   fetchTiposContrato,
-  updateContract,
-  createContract,
 } from "../services/api-service";
 
 interface ConntractFormProps {
@@ -129,54 +127,53 @@ export default function PropietarioFormPreview({
     }
   };
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (!formData.propetario || !formData.nombreEmpresa || !formData.email) {
-    toast({
-      title: "Error",
-      description: "Todos los campos son obligatorios",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  try {
-    setLoading(true);
-    
-    const response = await fetch("http://10.0.0.15:5210/api/Empresa", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: 0, // como el backend espera esto
-        ...formData,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("No se pudo crear la empresa");
+    if (!formData.propetario || !formData.nombreEmpresa || !formData.email) {
+      toast({
+        title: "Error",
+        description: "Todos los campos son obligatorios",
+        variant: "destructive",
+      });
+      return;
     }
 
-    toast({
-      title: "Empresa creada",
-      description: "La empresa fue registrada correctamente",
-    });
+    try {
+      setLoading(true);
 
-    onSuccess();
-  } catch (error) {
-    console.error("Error:", error);
-    toast({
-      title: "Error",
-      description: "No se pudo crear la empresa",
-      variant: "destructive",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+      const response = await fetch("http://10.0.0.15:5210/api/Empresa", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: 0,
+          ...formData,
+        }),
+      });
 
+      if (!response.ok) {
+        throw new Error("No se pudo crear la empresa");
+      }
+
+      toast({
+        title: "Empresa creada",
+        description: "La empresa fue registrada correctamente",
+      });
+
+      onSuccess();
+    } catch (error) {
+      console.error("Error:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo crear la empresa",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
